@@ -1,0 +1,17 @@
+name: substrato
+version: 0.1.0
+description: Agent-oriented Markdown skills for repository inference, backlog planning, spec compilation, and project revival.
+license: MIT
+skills:
+  - id: repo-distiller
+    path: skills/repo-distiller
+    entry: SKILL.md
+  - id: backlog-builder
+    path: skills/backlog-builder
+    entry: SKILL.md
+  - id: spec-compiler
+    path: skills/spec-compiler
+    entry: SKILL.md
+  - id: repo-reviver
+    path: skills/repo-reviver
+    entry: SKILL.md
