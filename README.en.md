@@ -11,23 +11,26 @@
 Substrato is a vendor-neutral bundle of Markdown skills for terminal AI agents.
 It gives agents reusable operating instructions for repository inference workflows:
 
-- `repo-distiller`: create `.distill/`, a compact codebase knowledge base for agents.
-- `backlog-builder`: turn a project or idea into `.backlog/` cards.
-- `spec-compiler`: compile confirmed backlog cards into implementation-ready specs.
-- `repo-reviver`: revive stale projects through safe dependency/toolchain updates.
+| Skill | What it does | How to trigger it |
+| --- | --- | --- |
+| `repo-distiller` | Creates `.distill/`, a compact codebase knowledge base for agents. | "Map this repository so future agents can understand it quickly." |
+| `backlog-builder` | Turns a project or idea into `.backlog/` cards. | "Turn this project into a prioritized backlog." |
+| `spec-compiler` | Compiles confirmed backlog cards into implementation-ready specs. | "Prepare this backlog card for implementation." |
+| `repo-reviver` | Revives stale projects through safe dependency/toolchain updates. | "Get this old project installing, running, and passing checks again." |
 
-The canonical package format is plain files:
+Git is the only dependency. The installers use only POSIX shell on Linux/macOS
+or PowerShell on Windows.
 
-```text
-substrato.yaml
-skills/<skill-name>/SKILL.md
-assets/
-installers/
-bin/
-```
+## Index
 
-No npm package is required. Git is the transport, and the installers use only
-POSIX shell on Linux/macOS or PowerShell on Windows.
+- [Install](#install)
+- [How to Use](#how-to-use)
+- [Uninstall](#uninstall)
+- [Skills](#skills)
+- [Details](#details)
+- [Targets](#targets)
+- [Copy vs Link](#copy-vs-link)
+- [Update](#update)
 
 ## Install
 
@@ -53,11 +56,109 @@ git clone --depth 1 https://github.com/yan-vidal/Substrato.git "$env:USERPROFILE
 & "$env:USERPROFILE\.substrato\bin\substrato.ps1" install -Target auto
 ```
 
-## How It Works
+## How to Use
 
-The clone at `~/.substrato` is the source and command wrapper. The install
-command copies or symlinks the skills into the discovery path used by each
-agent. You do not need to work inside the cloned Substrato repository.
+To install the default skill package into supported local targets:
+
+```sh
+~/.substrato/bin/substrato install --target auto
+```
+
+After installation, open your terminal agent in any project and ask in natural
+language. Examples:
+
+```text
+Map this repository so future agents can understand it quickly.
+Turn this project into a prioritized backlog.
+Prepare this backlog card for implementation.
+Get this old project installing, running, and passing checks again.
+```
+
+The clone at `~/.substrato` is the source and command wrapper. You can call
+`~/.substrato/bin/substrato` from any project; the installer copies or links the
+skills into the selected target.
+
+By default, `install` and `uninstall` operate on the whole package. Use
+`--skill` when you want to select specific skills:
+
+```sh
+~/.substrato/bin/substrato install --target agents --skill repo-distiller
+~/.substrato/bin/substrato install --target workspace --project /path/to/project \
+  --skill repo-distiller \
+  --skill spec-compiler
+```
+
+## Uninstall
+
+To remove installed skills from default targets and delete the source clone:
+
+```sh
+~/.substrato/bin/substrato uninstall --target auto && rm -rf ~/.substrato
+```
+
+Remove from a specific target:
+
+```sh
+~/.substrato/bin/substrato uninstall --target agents
+~/.substrato/bin/substrato uninstall --target claude
+```
+
+Remove from a workspace:
+
+```sh
+~/.substrato/bin/substrato uninstall --target workspace --project /path/to/your/project
+```
+
+The uninstall command removes only Substrato's known skill directories. It does
+not remove other skills from `~/.agents/skills`, `~/.claude/skills`, or
+`.agents/skills`.
+
+To remove only the source clone without touching installed skills:
+
+```sh
+rm -rf ~/.substrato
+```
+
+## Skills
+
+### `repo-distiller`
+
+Creates `.distill/`, a compact knowledge base that helps agents understand a
+repository without rereading everything. The skill treats documentation as a
+codec: `MAP.md` defines the notation, `INDEX.md` routes navigation, module files
+summarize important areas, and `INSIGHTS.md` captures invariants, couplings,
+risks, lies, and knowledge that does not live in one file. It is the best first
+step for large, unfamiliar, or paused repositories.
+
+### `backlog-builder`
+
+Turns a project, idea, or `.distill/` corpus into a traceable `.backlog/` board.
+The skill acts like a product owner: it infers the business, researches gaps and
+comparable products, proposes candidate cards, and confirms every requirement
+with the user before marking anything as `confirmed`. The output is a Markdown
+backlog with `BACKLOG.md`, individual card files, and `DECISIONS.md`, ready for
+humans and implementation agents.
+
+### `spec-compiler`
+
+Compiles a `confirmed` backlog card into two implementation specs under
+`.backlog/specs/`: a `compact` spec for strong models, preserving tactical
+freedom, and a `full` spec for smaller models, with a step-by-step playbook.
+The skill uses `.distill/`, `.backlog/`, and the real source code to define
+touchpoints, interfaces, constraints, verification commands, edge cases, and
+gotchas. Use it when a card is decided and needs to become executable
+instructions.
+
+### `repo-reviver`
+
+Revives old or broken projects without changing observable behavior. The skill
+requires a baseline before dependency changes, adds characterization tests when
+needed, groups packages into clusters, researches changelogs/CVEs/migration
+guides, and records decisions under `.revive/`. Each cluster becomes an
+interactive decision and one reversible commit. Use it for projects that no
+longer install, no longer run, are far behind, or depend on abandoned packages.
+
+## Details
 
 Global installs affect the local machine. They are available to CLI/local
 products that read the same filesystem. Remote cloud products will not see your
@@ -161,34 +262,3 @@ Use copy mode when link creation fails.
 ```
 
 Then rerun `install` for copy-mode targets.
-
-## Uninstall
-
-Remove installed Substrato skills from the default global targets:
-
-```sh
-~/.substrato/bin/substrato uninstall --target auto
-```
-
-Remove from a specific target:
-
-```sh
-~/.substrato/bin/substrato uninstall --target agents
-~/.substrato/bin/substrato uninstall --target claude
-```
-
-Remove from a workspace:
-
-```sh
-~/.substrato/bin/substrato uninstall --target workspace --project /path/to/your/project
-```
-
-The uninstall command removes only Substrato's known skill directories. It does
-not remove other skills from `~/.agents/skills`, `~/.claude/skills`, or
-`.agents/skills`.
-
-To remove the Substrato source clone too:
-
-```sh
-rm -rf ~/.substrato
-```

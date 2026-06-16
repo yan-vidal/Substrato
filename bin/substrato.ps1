@@ -24,8 +24,8 @@ switch ($Command) {
   }
   "help" {
     Write-Host "Usage:"
-    Write-Host "  .\bin\substrato.ps1 install -Target auto|agents|codex|gemini|opencode|antigravity|claude|workspace -Project PATH -Mode copy|link"
-    Write-Host "  .\bin\substrato.ps1 uninstall -Target auto|agents|codex|gemini|opencode|antigravity|claude|workspace -Project PATH"
+    Write-Host "  .\bin\substrato.ps1 install -Target auto|agents|codex|gemini|opencode|antigravity|claude|workspace -Project PATH -Mode copy|link -Skill NAME"
+    Write-Host "  .\bin\substrato.ps1 uninstall -Target auto|agents|codex|gemini|opencode|antigravity|claude|workspace -Project PATH -Skill NAME"
     Write-Host "  .\bin\substrato.ps1 update"
   }
 }

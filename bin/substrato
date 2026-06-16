@@ -22,8 +22,8 @@ case "$command" in
   help|-h|--help)
     cat <<'EOF'
 Usage:
-  substrato install [--target auto|agents|codex|gemini|opencode|antigravity|claude|workspace] [--project PATH] [--mode copy|link]
-  substrato uninstall [--target auto|agents|codex|gemini|opencode|antigravity|claude|workspace] [--project PATH]
+  substrato install [--target auto|agents|codex|gemini|opencode|antigravity|claude|workspace] [--project PATH] [--mode copy|link] [--skill NAME]
+  substrato uninstall [--target auto|agents|codex|gemini|opencode|antigravity|claude|workspace] [--project PATH] [--skill NAME]
   substrato update
 EOF
     ;;

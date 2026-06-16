@@ -4,7 +4,7 @@ set -eu
 usage() {
   cat <<'EOF'
 Usage:
-  install.sh [--action install|uninstall] [--target auto|agents|codex|gemini|opencode|antigravity|claude|workspace] [--project PATH] [--mode copy|link]
+  install.sh [--action install|uninstall] [--target auto|agents|codex|gemini|opencode|antigravity|claude|workspace] [--project PATH] [--mode copy|link] [--skill NAME]
 
 Targets:
   auto       Install global agent-compatible skills, plus Claude skills when ~/.claude exists.
@@ -20,6 +20,7 @@ Options:
   --action ACTION  install (default) or uninstall.
   --project PATH  Project path for workspace installs. Defaults to current directory.
   --mode MODE     copy (default) or link.
+  --skill NAME     Install or uninstall one skill. Repeat to select multiple skills.
 EOF
 }
 
@@ -34,6 +35,7 @@ target=auto
 project_dir=$(pwd)
 mode=copy
 action=install
+selected_skills=
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -55,6 +57,11 @@ while [ "$#" -gt 0 ]; do
     --mode)
       [ "$#" -ge 2 ] || die "Missing value for --mode"
       mode=$2
+      shift 2
+      ;;
+    --skill)
+      [ "$#" -ge 2 ] || die "Missing value for --skill"
+      selected_skills="${selected_skills}${selected_skills:+ }$2"
       shift 2
       ;;
     -h|--help)
@@ -100,18 +107,34 @@ copy_or_link_dir() {
 install_skill_dirs() {
   dst_root=$1
   mkdir -p "$dst_root"
-  for skill in "$root_dir"/skills/*; do
-    [ -d "$skill" ] || continue
-    copy_or_link_dir "$skill" "$dst_root/$(basename "$skill")" || return 1
-  done
+  if [ -n "$selected_skills" ]; then
+    for skill_name in $selected_skills; do
+      skill="$root_dir/skills/$skill_name"
+      [ -d "$skill" ] || die "Unknown skill: $skill_name"
+      copy_or_link_dir "$skill" "$dst_root/$(basename "$skill")" || return 1
+    done
+  else
+    for skill in "$root_dir"/skills/*; do
+      [ -d "$skill" ] || continue
+      copy_or_link_dir "$skill" "$dst_root/$(basename "$skill")" || return 1
+    done
+  fi
 }
 
 uninstall_skill_dirs() {
   dst_root=$1
-  for skill in "$root_dir"/skills/*; do
-    [ -d "$skill" ] || continue
-    rm -rf "$dst_root/$(basename "$skill")"
-  done
+  if [ -n "$selected_skills" ]; then
+    for skill_name in $selected_skills; do
+      skill="$root_dir/skills/$skill_name"
+      [ -d "$skill" ] || die "Unknown skill: $skill_name"
+      rm -rf "$dst_root/$(basename "$skill")"
+    done
+  else
+    for skill in "$root_dir"/skills/*; do
+      [ -d "$skill" ] || continue
+      rm -rf "$dst_root/$(basename "$skill")"
+    done
+  fi
 }
 
 install_workspace() {

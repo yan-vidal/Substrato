@@ -8,7 +8,9 @@ param(
   [string]$Project = (Get-Location).Path,
 
   [ValidateSet("copy", "link")]
-  [string]$Mode = "copy"
+  [string]$Mode = "copy",
+
+  [string[]]$Skill = @()
 )
 
 $ErrorActionPreference = "Stop"
@@ -46,15 +48,29 @@ function Install-SkillDirs {
   param([string]$DestinationRoot)
 
   New-Item -ItemType Directory -Force -Path $DestinationRoot | Out-Null
-  Get-ChildItem -Path $SkillsDir -Directory | ForEach-Object {
+  Get-SelectedSkillDirs | ForEach-Object {
     Copy-OrLinkDir -Source $_.FullName -Destination (Join-Path $DestinationRoot $_.Name)
+  }
+}
+
+function Get-SelectedSkillDirs {
+  if ($Skill.Count -gt 0) {
+    foreach ($SkillName in $Skill) {
+      $SkillPath = Join-Path $SkillsDir $SkillName
+      if (-not (Test-Path $SkillPath -PathType Container)) {
+        throw "Unknown skill: $SkillName"
+      }
+      Get-Item $SkillPath
+    }
+  } else {
+    Get-ChildItem -Path $SkillsDir -Directory
   }
 }
 
 function Uninstall-SkillDirs {
   param([string]$DestinationRoot)
 
-  Get-ChildItem -Path $SkillsDir -Directory | ForEach-Object {
+  Get-SelectedSkillDirs | ForEach-Object {
     $Destination = Join-Path $DestinationRoot $_.Name
     if (Test-Path $Destination) {
       Remove-Item $Destination -Recurse -Force
